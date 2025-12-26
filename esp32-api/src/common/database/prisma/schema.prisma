@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Teacher {
+  id         Int      @id @default(autoincrement())
+  protocol   String   @unique @db.VarChar()
+  name       String   @db.VarChar()
+  password   String   @db.VarChar()
+  is_admin   Boolean  @default(false)
+
+  card      Card?
+  reserves  Reserve[]
+  registers Register[]
+
+  @@map("teachers")
+}
+
+model Card {
+  id         Int      @id @default(autoincrement())
+  uid        String   @unique @db.VarChar(20)
+  created_at DateTime @default(now()) @db.Timestamptz()
+
+  teacher_id Int?     @unique
+  teacher    Teacher? @relation(fields: [teacher_id], references: [id], onDelete: SetNull)
+
+  @@map("cards")
+}
+
+model Reserve {
+  id             Int      @id @default(autoincrement())
+  entry_datetime DateTime @db.Timestamptz()
+  exit_datetime  DateTime @db.Timestamptz()
+  created_at     DateTime @default(now()) @db.Timestamptz()
+
+  teacher_id Int
+  teacher    Teacher @relation(fields: [teacher_id], references: [id], onDelete: Cascade)
+
+  classroom_id Int
+  classroom    Classroom @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
+
+  @@map("reserves")
+}
+
+model Register {
+  id             Int       @id @default(autoincrement())
+  entry_datetime DateTime  @db.Timestamptz()
+  exit_datetime  DateTime? @db.Timestamptz()
+
+  teacher_id Int
+  teacher    Teacher @relation(fields: [teacher_id], references: [id], onDelete: Cascade)
+
+  classroom_id Int
+  classroom    Classroom @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
+
+  @@map("registers")
+}
+
+model Classroom {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique() @db.VarChar()
+  
+  reserves  Reserve[]
+  registers Register[]
+
+  @@map("classrooms")
+}

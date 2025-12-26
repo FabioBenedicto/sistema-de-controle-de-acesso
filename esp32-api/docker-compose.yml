@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16
+    container_name: esp32-postgres
+    environment:
+      POSTGRES_USER: ${DATABASE_USER} 
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD} 
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - esp32-postgres-new:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  
+    restart: always 
+  
+  emqx:
+    image: emqx/emqx:latest
+    container_name: esp32-emqx
+    environment:
+      EMQX_ALLOW_ANONYMOUS: "true"
+      EMQX_DASHBOARD__DEFAULT_USERNAME: admin
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: public
+    volumes:
+      - esp32-emqx-data:/opt/emqx/data
+      - esp32-emqx-log:/opt/emqx/log
+    ports:
+      - "1883:1883"
+      - "8883:8883"    
+      - "8083:8083"    
+      - "8084:8084"    
+      - "18083:18083"  
+    restart: always
+
+volumes:
+  esp32-postgres-new:
+    driver: local
+  esp32-emqx-data:
+    driver: local
+  esp32-emqx-log:
+    driver: local
